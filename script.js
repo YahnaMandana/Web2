@@ -1,3 +1,4 @@
+const INTRO_DURATION = 2500;
 const intro = document.getElementById("intro");
 
 window.addEventListener("load", () => {
@@ -9,5 +10,5 @@ window.addEventListener("load", () => {
   setTimeout(() => {
     document.body.classList.add("loaded");
     intro.remove();
-  }, 2500);
+  }, INTRO_DURATION);
 });
