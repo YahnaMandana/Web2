@@ -464,6 +464,45 @@
   .fc-refresh:hover { color: var(--neon-cyan); }
   .fc-time { color: rgba(0,255,65,0.2); font-size: 0.52rem; }
 
+  .upload-form {
+    display:flex;
+    flex-direction:column;
+    gap:0.6rem;
+  }
+  .upload-label {
+    font-size:0.58rem;
+    color:rgba(0,255,65,0.45);
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+  }
+  .upload-input {
+    width:100%;
+    padding:0.55rem 0.6rem;
+    background:rgba(0,255,65,0.04);
+    border:1px solid rgba(0,255,65,0.2);
+    color:rgba(0,255,65,0.75);
+    font-family:'Share Tech Mono',monospace;
+    font-size:0.62rem;
+  }
+  .upload-input::file-selector-button {
+    margin-right:0.7rem;
+    background:rgba(0,245,255,0.1);
+    border:1px solid rgba(0,245,255,0.25);
+    color:var(--neon-cyan);
+    padding:0.3rem 0.55rem;
+    font-family:'Share Tech Mono',monospace;
+    font-size:0.56rem;
+    cursor:pointer;
+  }
+  .upload-status {
+    font-size:0.58rem;
+    min-height:1rem;
+    color:rgba(0,255,65,0.6);
+  }
+  .upload-status.error {
+    color:rgba(255,60,60,0.7);
+  }
+
   /* Footer */
   footer {
     border-top:1px solid rgba(0,255,65,0.08);
@@ -580,6 +619,23 @@
         <div class="fc-body collapsed" id="jbBody">
           <div class="fc-loading" id="jbLoading">FETCHING DATA<span></span></div>
           <div id="jbContent" style="display:none;"></div>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="fc-header">
+          <div class="fc-title-row">
+            <span class="fc-dot"></span>
+            <span class="fc-label">📷 Upload Foto</span>
+          </div>
+          <span class="fc-badge">NEW</span>
+        </div>
+        <div class="fc-body" id="photoUploadBody">
+          <form class="upload-form" id="photoUploadForm">
+            <label class="upload-label" for="photoInput">Pilih file gambar (JPG/PNG/WebP, max 5MB)</label>
+            <input class="upload-input" id="photoInput" type="file" accept="image/jpeg,image/png,image/webp">
+            <p class="upload-status" id="photoUploadStatus">Belum ada foto dipilih.</p>
+          </form>
         </div>
       </div>
 
