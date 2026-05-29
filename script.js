@@ -376,8 +376,6 @@ const PHOTO_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const photoInput = document.getElementById('photoInput');
 const photoStatus = document.getElementById('photoUploadStatus');
-const photoPreview = document.getElementById('photoPreview');
-let currentPhotoObjectUrl = null;
 
 function setUploadStatus(message, isError = false) {
   if (!photoStatus) return;
@@ -385,49 +383,26 @@ function setUploadStatus(message, isError = false) {
   photoStatus.classList.toggle('error', isError);
 }
 
-function resetPhotoPreview() {
-  if (currentPhotoObjectUrl) {
-    URL.revokeObjectURL(currentPhotoObjectUrl);
-    currentPhotoObjectUrl = null;
-  }
-  if (!photoPreview) return;
-  photoPreview.removeAttribute('src');
-  photoPreview.style.display = 'none';
-}
-
 function handlePhotoUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
     setUploadStatus('Belum ada foto dipilih.');
-    resetPhotoPreview();
     return;
   }
 
   if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
     setUploadStatus('Format harus JPG, PNG, atau WebP.', true);
     event.target.value = '';
-    resetPhotoPreview();
     return;
   }
 
   if (file.size > PHOTO_MAX_SIZE_BYTES) {
     setUploadStatus('Ukuran file melebihi 5MB.', true);
     event.target.value = '';
-    resetPhotoPreview();
     return;
   }
 
-  resetPhotoPreview();
-  currentPhotoObjectUrl = URL.createObjectURL(file);
-  if (!currentPhotoObjectUrl.startsWith('blob:')) {
-    setUploadStatus('Gagal membuat preview file.', true);
-    resetPhotoPreview();
-    return;
-  }
-  if (!photoPreview) return;
-  photoPreview.src = currentPhotoObjectUrl;
-  photoPreview.style.display = 'block';
-  setUploadStatus(`Foto "${file.name}" siap digunakan.`);
+  setUploadStatus(`Foto "${file.name}" berhasil dipilih.`);
 }
 
 if (photoInput) {
