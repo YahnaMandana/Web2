@@ -414,7 +414,7 @@ function handlePhotoUpload(event) {
   const reader = new FileReader();
   reader.onload = () => {
     if (!photoPreview) return;
-    photoPreview.src = String(reader.result);
+    photoPreview.src = reader.result;
     photoPreview.style.display = 'block';
     setUploadStatus(`Foto "${file.name}" siap digunakan.`);
   };
