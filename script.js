@@ -255,7 +255,7 @@ async function fetchGempa() {
     loading.style.display = 'none';
     content.style.display = 'block';
     content.innerHTML = `
-      <div class="qw-err">⚠ Gagal terhubung ke fitur</div>
+      <div class="qw-err">⚠ Gagal terhubung ke layanan</div>
       <div class="qw-footer" style="margin-top:0.4rem;">
         <span class="qw-refresh" onclick="fetchGempa()">↻ COBA LAGI</span>
       </div>`;
@@ -335,7 +335,7 @@ async function fetchJadwalBola() {
     loading.style.display = 'none';
     content.style.display = 'block';
     content.innerHTML = `
-      <div class="fc-err">⚠ Gagal terhubung ke fitur</div>
+      <div class="fc-err">⚠ Gagal terhubung ke layanan</div>
       <div class="fc-footer" style="margin-top:0.4rem;">
         <span class="fc-refresh" onclick="fetchJadwalBola()">↻ COBA LAGI</span>
       </div>`;
