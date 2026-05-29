@@ -370,3 +370,85 @@ async function fetchJadwalBola() {
 }
 
 window.fetchJadwalBola = fetchJadwalBola;
+
+// ===== PHOTO UPLOAD CARD =====
+let photoCollapsed = true;
+let previewObjectUrl = '';
+
+function togglePhotoUpload() {
+  photoCollapsed = !photoCollapsed;
+  const body = document.getElementById('photoBody');
+  const toggle = document.getElementById('photoToggle');
+  if (!body || !toggle) return;
+  body.classList.toggle('collapsed', photoCollapsed);
+  toggle.textContent = photoCollapsed ? '▲' : '▼';
+}
+
+window.togglePhotoUpload = togglePhotoUpload;
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function initializePhotoUpload() {
+  const fileInput = document.getElementById('photoFileInput');
+  const uploadButton = document.getElementById('photoUploadBtn');
+  const status = document.getElementById('photoUploadStatus');
+  const previewWrap = document.getElementById('photoPreviewWrap');
+  const previewImg = document.getElementById('photoPreviewImg');
+  const photoMeta = document.getElementById('photoMeta');
+  if (!fileInput || !uploadButton || !status || !previewWrap || !previewImg || !photoMeta) return;
+
+  const resetPreview = () => {
+    if (previewObjectUrl) {
+      URL.revokeObjectURL(previewObjectUrl);
+      previewObjectUrl = '';
+    }
+    previewImg.removeAttribute('src');
+    photoMeta.textContent = '';
+    previewWrap.style.display = 'none';
+  };
+
+  const setStatus = (message, isError = false) => {
+    status.textContent = message;
+    status.classList.toggle('error', isError);
+  };
+
+  uploadButton.addEventListener('click', () => {
+    const selectedFile = fileInput.files?.[0];
+    if (!selectedFile) {
+      setStatus('Pilih foto terlebih dulu.', true);
+      resetPreview();
+      return;
+    }
+
+    if (!selectedFile.type.startsWith('image/')) {
+      setStatus('File harus berupa gambar.', true);
+      resetPreview();
+      return;
+    }
+
+    const maxSizeInBytes = 4 * 1024 * 1024;
+    if (selectedFile.size > maxSizeInBytes) {
+      setStatus('Ukuran file maksimal 4MB.', true);
+      resetPreview();
+      return;
+    }
+
+    if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+    previewObjectUrl = URL.createObjectURL(selectedFile);
+    previewImg.src = previewObjectUrl;
+    previewWrap.style.display = 'block';
+    photoMeta.textContent = `${selectedFile.name} · ${formatFileSize(selectedFile.size)}`;
+    setStatus('Upload berhasil (preview lokal).');
+  });
+
+  fileInput.addEventListener('change', () => {
+    setStatus('');
+    if (!fileInput.files?.length) resetPreview();
+  });
+}
+
+initializePhotoUpload();
