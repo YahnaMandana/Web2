@@ -62,6 +62,7 @@ function launchMain() {
     document.getElementById('main-content').classList.add('visible');
     startCounters();
     fetchGempa();
+    startQuakeAutoRefresh();
   }, 800);
 }
 
@@ -161,7 +162,8 @@ async function fetchGempa() {
       try {
         raw = await fetchGempaFrom(endpoint);
         if (raw) break;
-      } catch {
+      } catch (error) {
+        console.warn(`Gagal fetch endpoint gempa: ${endpoint}`, error);
         raw = null;
       }
     }
@@ -214,7 +216,8 @@ async function fetchGempa() {
       </div>`;
 
     content.innerHTML = html;
-  } catch {
+  } catch (error) {
+    console.warn('Gagal memuat data gempa dari semua endpoint.', error);
     loading.style.display = 'none';
     content.style.display = 'block';
     content.innerHTML = `
@@ -227,5 +230,8 @@ async function fetchGempa() {
 
 window.fetchGempa = fetchGempa;
 
-// Auto-refresh setiap 5 menit
-setInterval(fetchGempa, 5 * 60 * 1000);
+let quakeRefreshIntervalId = null;
+function startQuakeAutoRefresh() {
+  if (quakeRefreshIntervalId) return;
+  quakeRefreshIntervalId = setInterval(fetchGempa, 5 * 60 * 1000);
+}
