@@ -404,7 +404,7 @@ function handlePhotoUpload(event) {
   }
 
   if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
-    setUploadStatus('File harus berupa gambar.', true);
+    setUploadStatus('Format harus JPG, PNG, atau WebP.', true);
     event.target.value = '';
     resetPhotoPreview();
     return;
@@ -419,6 +419,11 @@ function handlePhotoUpload(event) {
 
   resetPhotoPreview();
   currentPhotoObjectUrl = URL.createObjectURL(file);
+  if (!currentPhotoObjectUrl.startsWith('blob:')) {
+    setUploadStatus('Gagal membuat preview file.', true);
+    resetPhotoPreview();
+    return;
+  }
   if (!photoPreview) return;
   photoPreview.src = currentPhotoObjectUrl;
   photoPreview.style.display = 'block';
