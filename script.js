@@ -8,7 +8,6 @@ window.addEventListener("load", () => {
 
   setTimeout(() => {
     document.body.classList.add("loaded");
-    intro.setAttribute("aria-hidden", "true");
     intro.hidden = true;
   }, 2500);
 });
