@@ -95,7 +95,6 @@ function launchMain() {
     document.getElementById('main-content').classList.add('visible');
     startCounters();
     fetchGempa();
-    fetchJadwalBola();
     startQuakeAutoRefresh();
   }, 800);
 }
@@ -271,15 +270,41 @@ function startQuakeAutoRefresh() {
 }
 
 // ===== JADWAL BOLA WIDGET =====
-let jbCollapsed = false;
+let jbCollapsed = true;
+let jbLoaded = false;
+let jbLoading = false;
+
+async function loadJadwalBolaOnce() {
+  if (jbLoaded || jbLoading) return;
+  jbLoading = true;
+  try {
+    jbLoaded = await fetchJadwalBola();
+  } finally {
+    jbLoading = false;
+  }
+}
+
+async function retryJadwalBola() {
+  if (jbLoading) return;
+  jbLoading = true;
+  try {
+    jbLoaded = await fetchJadwalBola();
+  } finally {
+    jbLoading = false;
+  }
+}
 
 function toggleJadwalBola() {
   jbCollapsed = !jbCollapsed;
   document.getElementById('jbBody').classList.toggle('collapsed', jbCollapsed);
   document.getElementById('jbToggle').textContent = jbCollapsed ? '▲' : '▼';
+  if (!jbCollapsed) {
+    loadJadwalBolaOnce();
+  }
 }
 
 window.toggleJadwalBola = toggleJadwalBola;
+window.retryJadwalBola = retryJadwalBola;
 
 async function fetchJadwalBola() {
   const loading = document.getElementById('jbLoading');
@@ -297,7 +322,7 @@ async function fetchJadwalBola() {
 
     if (!data?.status || !Array.isArray(data.result) || data.result.length === 0) {
       content.innerHTML = '<div class="fc-err">⚠ Data tidak tersedia</div>';
-      return;
+      return true;
     }
 
     const fetchTime = new Date().toTimeString().split(' ')[0];
@@ -326,10 +351,11 @@ async function fetchJadwalBola() {
       <hr class="fc-divider">
       <div class="fc-footer">
         <span class="fc-time">UPDATED ${fetchTime}</span>
-        <span class="fc-refresh" onclick="fetchJadwalBola()">↻ REFRESH</span>
+        <span class="fc-refresh" onclick="retryJadwalBola()">↻ REFRESH</span>
       </div>`;
 
     content.innerHTML = html;
+    return true;
   } catch (error) {
     console.warn('Gagal memuat data jadwal bola.', error);
     loading.style.display = 'none';
@@ -337,8 +363,9 @@ async function fetchJadwalBola() {
     content.innerHTML = `
       <div class="fc-err">⚠ Gagal terhubung ke layanan</div>
       <div class="fc-footer" style="margin-top:0.4rem;">
-        <span class="fc-refresh" onclick="fetchJadwalBola()">↻ COBA LAGI</span>
+        <span class="fc-refresh" onclick="retryJadwalBola()">↻ COBA LAGI</span>
       </div>`;
+    return false;
   }
 }
 
