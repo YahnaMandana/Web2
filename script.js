@@ -43,6 +43,21 @@ function initMatrix(id) {
 initMatrix('matrix-canvas');
 initMatrix('intro-canvas');
 
+// Background audio
+const bgAudio = document.getElementById('bg-audio');
+
+function playBackgroundAudio() {
+  if (!bgAudio) return;
+  bgAudio.volume = 0.5;
+  bgAudio.play().catch(() => {
+    document.addEventListener('click', playBackgroundAudio, { once: true });
+    document.addEventListener('keydown', playBackgroundAudio, { once: true });
+    document.addEventListener('touchstart', playBackgroundAudio, { once: true });
+  });
+}
+
+window.addEventListener('load', playBackgroundAudio);
+
 // Intro
 let pct = 0;
 const pctEl = document.getElementById('introPercent');
