@@ -95,7 +95,6 @@ function launchMain() {
     document.getElementById('main-content').classList.add('visible');
     startCounters();
     fetchGempa();
-    fetchJadwalBola();
     startQuakeAutoRefresh();
   }, 800);
 }
@@ -271,12 +270,17 @@ function startQuakeAutoRefresh() {
 }
 
 // ===== JADWAL BOLA WIDGET =====
-let jbCollapsed = false;
+let jbCollapsed = true;
+let jbLoaded = false;
 
 function toggleJadwalBola() {
   jbCollapsed = !jbCollapsed;
   document.getElementById('jbBody').classList.toggle('collapsed', jbCollapsed);
   document.getElementById('jbToggle').textContent = jbCollapsed ? '▲' : '▼';
+  if (!jbCollapsed && !jbLoaded) {
+    jbLoaded = true;
+    fetchJadwalBola();
+  }
 }
 
 window.toggleJadwalBola = toggleJadwalBola;
