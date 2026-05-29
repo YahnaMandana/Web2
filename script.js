@@ -274,20 +274,21 @@ let jbCollapsed = true;
 let jbLoaded = false;
 let jbLoading = false;
 
+async function loadJadwalBolaOnce() {
+  if (jbCollapsed || jbLoaded || jbLoading) return;
+  jbLoading = true;
+  try {
+    jbLoaded = await fetchJadwalBola();
+  } finally {
+    jbLoading = false;
+  }
+}
+
 function toggleJadwalBola() {
   jbCollapsed = !jbCollapsed;
   document.getElementById('jbBody').classList.toggle('collapsed', jbCollapsed);
   document.getElementById('jbToggle').textContent = jbCollapsed ? '▲' : '▼';
-  if (!jbCollapsed && !jbLoaded && !jbLoading) {
-    jbLoading = true;
-    fetchJadwalBola()
-      .then((loaded) => {
-        jbLoaded = loaded;
-      })
-      .finally(() => {
-        jbLoading = false;
-      });
-  }
+  loadJadwalBolaOnce();
 }
 
 window.toggleJadwalBola = toggleJadwalBola;
