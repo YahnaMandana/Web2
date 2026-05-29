@@ -1,7 +1,7 @@
 const INTRO_DURATION = 2500;
 const intro = document.getElementById("intro");
 const GEMPA_ENDPOINT = "https://api.cuki.biz.id/api/info/bmkg?apikey=cuki-x";
-const GEMPA_REFRESH_MS = 60000;
+const GEMPA_REFRESH_INTERVAL_MS = 60000;
 
 const gempaStatus = document.getElementById("gempaStatus");
 const gempaData = document.getElementById("gempaData");
@@ -70,5 +70,13 @@ window.addEventListener("load", () => {
   }
 
   loadGempaInfo();
-  setInterval(loadGempaInfo, GEMPA_REFRESH_MS);
+  const gempaIntervalId = setInterval(loadGempaInfo, GEMPA_REFRESH_INTERVAL_MS);
+
+  window.addEventListener(
+    "beforeunload",
+    () => {
+      clearInterval(gempaIntervalId);
+    },
+    { once: true }
+  );
 });
