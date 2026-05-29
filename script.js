@@ -370,3 +370,61 @@ async function fetchJadwalBola() {
 }
 
 window.fetchJadwalBola = fetchJadwalBola;
+
+// ===== FOTO UPLOAD =====
+const PHOTO_MAX_SIZE = 5 * 1024 * 1024;
+const photoInput = document.getElementById('photoInput');
+const photoStatus = document.getElementById('photoUploadStatus');
+const photoPreview = document.getElementById('photoPreview');
+
+function setUploadStatus(message, isError = false) {
+  if (!photoStatus) return;
+  photoStatus.textContent = message;
+  photoStatus.classList.toggle('error', isError);
+}
+
+function resetPhotoPreview() {
+  if (!photoPreview) return;
+  photoPreview.removeAttribute('src');
+  photoPreview.style.display = 'none';
+}
+
+function handlePhotoUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    setUploadStatus('Belum ada foto dipilih.');
+    resetPhotoPreview();
+    return;
+  }
+
+  if (!file.type.startsWith('image/')) {
+    setUploadStatus('File harus berupa gambar.', true);
+    event.target.value = '';
+    resetPhotoPreview();
+    return;
+  }
+
+  if (file.size > PHOTO_MAX_SIZE) {
+    setUploadStatus('Ukuran file melebihi 5MB.', true);
+    event.target.value = '';
+    resetPhotoPreview();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (!photoPreview) return;
+    photoPreview.src = String(reader.result);
+    photoPreview.style.display = 'block';
+    setUploadStatus(`Foto "${file.name}" siap digunakan.`);
+  };
+  reader.onerror = () => {
+    setUploadStatus('Gagal membaca file. Coba file lain.', true);
+    resetPhotoPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+if (photoInput) {
+  photoInput.addEventListener('change', handlePhotoUpload);
+}
