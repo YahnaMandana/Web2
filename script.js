@@ -45,7 +45,7 @@ initMatrix('intro-canvas');
 
 // Background audio
 const bgAudio = document.getElementById('bg-audio');
-const BACKGROUND_AUDIO_VOLUME = 0.5;
+const BACKGROUND_AUDIO_DEFAULT_VOLUME = 0.5;
 let bgAudioRetryRegistered = false;
 
 function removeAudioRetryListeners() {
@@ -63,9 +63,9 @@ function handleAudioRetry() {
 
 function playBackgroundAudio() {
   if (!bgAudio) return;
-  bgAudio.volume = BACKGROUND_AUDIO_VOLUME;
+  bgAudio.volume = BACKGROUND_AUDIO_DEFAULT_VOLUME;
   bgAudio.play().catch((error) => {
-    console.warn('Autoplay audio ditunda sampai ada interaksi pengguna.', error);
+    console.warn('Autoplay delayed until user interaction.', error);
     if (bgAudioRetryRegistered) return;
     bgAudioRetryRegistered = true;
     ['click', 'keydown', 'touchstart'].forEach((eventName) => {
