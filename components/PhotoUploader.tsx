@@ -17,6 +17,7 @@ export function PhotoUploader({ endpoint }: PhotoUploaderProps) {
       <p className="text-sm font-medium">Pilih file gambar lalu unggah</p>
       <UploadButton
         endpoint={endpoint}
+        aria-label="Unggah foto"
         content={{
           allowedContent: "Hanya gambar",
           button({ ready }) {
@@ -25,7 +26,7 @@ export function PhotoUploader({ endpoint }: PhotoUploaderProps) {
         }}
         onClientUploadComplete={(result) => {
           setErrorMessage("");
-          const publicUrl = result?.[0]?.ufsUrl ?? result?.[0]?.url ?? "";
+          const publicUrl = result?.[0]?.url ?? result?.[0]?.ufsUrl ?? "";
           if (!publicUrl) {
             setErrorMessage("Upload berhasil, tetapi URL publik tidak ditemukan.");
             return;
