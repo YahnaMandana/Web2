@@ -372,7 +372,7 @@ async function fetchJadwalBola() {
 window.fetchJadwalBola = fetchJadwalBola;
 
 // ===== FOTO UPLOAD =====
-const PHOTO_MAX_SIZE = 5 * 1024 * 1024;
+const PHOTO_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const photoInput = document.getElementById('photoInput');
 const photoStatus = document.getElementById('photoUploadStatus');
 const photoPreview = document.getElementById('photoPreview');
@@ -404,7 +404,7 @@ function handlePhotoUpload(event) {
     return;
   }
 
-  if (file.size > PHOTO_MAX_SIZE) {
+  if (file.size > PHOTO_MAX_SIZE_BYTES) {
     setUploadStatus('Ukuran file melebihi 5MB.', true);
     event.target.value = '';
     resetPhotoPreview();
@@ -413,8 +413,14 @@ function handlePhotoUpload(event) {
 
   const reader = new FileReader();
   reader.onload = () => {
+    const result = reader.result;
+    if (typeof result !== 'string' || !result.startsWith('data:image/')) {
+      setUploadStatus('Format gambar tidak didukung.', true);
+      resetPhotoPreview();
+      return;
+    }
     if (!photoPreview) return;
-    photoPreview.src = reader.result;
+    photoPreview.src = result;
     photoPreview.style.display = 'block';
     setUploadStatus(`Foto "${file.name}" siap digunakan.`);
   };
