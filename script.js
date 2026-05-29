@@ -8,6 +8,6 @@ window.addEventListener("load", () => {
 
   setTimeout(() => {
     document.body.classList.add("loaded");
-    intro.hidden = true;
+    intro.remove();
   }, 2500);
 });
