@@ -284,6 +284,16 @@ async function loadJadwalBolaOnce() {
   }
 }
 
+async function retryJadwalBola() {
+  if (jbLoading) return;
+  jbLoading = true;
+  try {
+    jbLoaded = await fetchJadwalBola();
+  } finally {
+    jbLoading = false;
+  }
+}
+
 function toggleJadwalBola() {
   jbCollapsed = !jbCollapsed;
   document.getElementById('jbBody').classList.toggle('collapsed', jbCollapsed);
@@ -294,6 +304,7 @@ function toggleJadwalBola() {
 }
 
 window.toggleJadwalBola = toggleJadwalBola;
+window.retryJadwalBola = retryJadwalBola;
 
 async function fetchJadwalBola() {
   const loading = document.getElementById('jbLoading');
@@ -340,7 +351,7 @@ async function fetchJadwalBola() {
       <hr class="fc-divider">
       <div class="fc-footer">
         <span class="fc-time">UPDATED ${fetchTime}</span>
-        <span class="fc-refresh" onclick="fetchJadwalBola()">↻ REFRESH</span>
+        <span class="fc-refresh" onclick="retryJadwalBola()">↻ REFRESH</span>
       </div>`;
 
     content.innerHTML = html;
@@ -352,7 +363,7 @@ async function fetchJadwalBola() {
     content.innerHTML = `
       <div class="fc-err">⚠ Gagal terhubung ke layanan</div>
       <div class="fc-footer" style="margin-top:0.4rem;">
-        <span class="fc-refresh" onclick="fetchJadwalBola()">↻ COBA LAGI</span>
+        <span class="fc-refresh" onclick="retryJadwalBola()">↻ COBA LAGI</span>
       </div>`;
     return false;
   }
