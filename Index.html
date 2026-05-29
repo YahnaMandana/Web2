@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boysz Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon-green: #00ff41;
+    --neon-cyan: #00f5ff;
+    --neon-pink: #ff00a8;
+    --neon-orange: #ff6600;
+    --neon-purple: #bf00ff;
+    --dark-bg: #020a02;
+    --grid-color: rgba(0, 255, 65, 0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark-bg);
+    color: var(--neon-green);
+    font-family: 'Share Tech Mono', monospace;
+    overflow-x: hidden;
+    min-height: 100vh;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 16px; height: 16px;
+    border: 1px solid var(--neon-cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: all 0.08s ease;
+    box-shadow: 0 0 8px var(--neon-cyan);
+  }
+  .cursor-dot {
+    position: fixed;
+    width: 4px; height: 4px;
+    background: var(--neon-cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+  }
+
+  #matrix-canvas {
+    position: fixed; top:0; left:0;
+    width:100%; height:100%;
+    opacity: 0.12; z-index:0; pointer-events:none;
+  }
+
+  .grid-overlay {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index:0; pointer-events:none;
+  }
+
+  .scanlines {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+    z-index:1; pointer-events:none;
+  }
+
+  /* ===== INTRO ===== */
+  #intro-screen {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:#000; z-index:100;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; overflow:hidden;
+  }
+  .intro-title {
+    font-family:'Orbitron',monospace;
+    font-size: clamp(2.5rem,8vw,6rem);
+    font-weight:900; color:var(--neon-green);
+    letter-spacing:0.15em;
+    text-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green), 0 0 60px var(--neon-green);
+    animation: glitch-text 0.5s infinite;
+    position:relative;
+  }
+  .intro-title::before, .intro-title::after {
+    content: attr(data-text);
+    position:absolute; top:0; left:0; width:100%;
+  }
+  .intro-title::before {
+    color:var(--neon-cyan);
+    animation:glitch-before 0.6s infinite;
+    clip-path:polygon(0 30%,100% 30%,100% 50%,0 50%);
+    text-shadow:2px 0 var(--neon-cyan);
+  }
+  .intro-title::after {
+    color:var(--neon-pink);
+    animation:glitch-after 0.4s infinite;
+    clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);
+    text-shadow:-2px 0 var(--neon-pink);
+  }
+  @keyframes glitch-before {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-3px)}
+    40%{transform:translateX(3px)} 60%{transform:translateX(-2px)} 80%{transform:translateX(2px)}
+  }
+  @keyframes glitch-after {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(3px)}
+    50%{transform:translateX(-3px)} 75%{transform:translateX(2px)}
+  }
+  @keyframes glitch-text {
+    0%,90%,100%{transform:skewX(0)} 92%{transform:skewX(-1deg)}
+    94%{transform:skewX(1deg)} 96%{transform:skewX(-0.5deg)}
+  }
+  .intro-sub {
+    font-size:clamp(0.6rem,1.5vw,0.85rem); color:var(--neon-cyan);
+    letter-spacing:0.4em; margin-top:1rem;
+    opacity:0; animation:fadeInSub 0.5s ease 0.8s forwards;
+  }
+  @keyframes fadeInSub { to{opacity:0.7} }
+  .intro-bar {
+    width:300px; height:2px; background:rgba(0,255,65,0.15);
+    margin-top:2rem; overflow:hidden;
+  }
+  .intro-bar-fill {
+    height:100%;
+    background:linear-gradient(90deg,var(--neon-green),var(--neon-cyan));
+    box-shadow:0 0 10px var(--neon-green);
+    width:0%; animation:barFill 2.5s ease 0.3s forwards;
+  }
+  @keyframes barFill { to{width:100%} }
+  .intro-percent { font-size:0.75rem; color:var(--neon-green); margin-top:0.5rem; letter-spacing:0.2em; opacity:0.7; }
+  .intro-fadeout { animation:introOut 0.8s ease forwards !important; }
+  @keyframes introOut {
+    0%{opacity:1;transform:scale(1)} 50%{opacity:1;transform:scale(1.02);filter:brightness(2)}
+    100%{opacity:0;transform:scale(0.95);pointer-events:none}
+  }
+
+  /* ===== MAIN ===== */
+  #main-content { position:relative; z-index:2; min-height:100vh; opacity:0; transition:opacity 0.6s ease; }
+  #main-content.visible { opacity:1; }
+
+  header {
+    border-bottom:1px solid rgba(0,255,65,0.15);
+    padding:1rem 2rem;
+    display:flex; align-items:center; justify-content:space-between;
+    background:rgba(0,10,0,0.85); backdrop-filter:blur(8px);
+    position:sticky; top:0; z-index:10;
+  }
+  .logo { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:700; color:var(--neon-green); text-shadow:0 0 12px var(--neon-green); letter-spacing:0.15em; }
+  .logo span { color:var(--neon-cyan); }
+  .header-status { display:flex; align-items:center; gap:1.5rem; font-size:0.65rem; color:rgba(0,255,65,0.5); letter-spacing:0.15em; }
+  .status-dot { display:inline-block; width:6px; height:6px; background:var(--neon-green); border-radius:50%; box-shadow:0 0 8px var(--neon-green); animation:blink 1.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* Hero */
+  .hero { padding:5rem 2rem 4rem; max-width:1100px; margin:0 auto; text-align:center; }
+  .welcome-badge {
+    display:inline-block; border:1px solid rgba(0,245,255,0.3);
+    padding:0.3rem 1rem; font-size:0.65rem; letter-spacing:0.3em;
+    color:var(--neon-cyan); margin-bottom:2rem; text-transform:uppercase;
+    position:relative; overflow:hidden;
+  }
+  .welcome-badge::before {
+    content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+    background:linear-gradient(90deg,transparent,rgba(0,245,255,0.1),transparent);
+    animation:shimmer 2.5s infinite;
+  }
+  @keyframes shimmer { to{left:200%} }
+  .hero-headline { font-family:'Orbitron',monospace; font-size:clamp(1.5rem,5vw,3.5rem); font-weight:900; line-height:1.1; color:#fff; margin-bottom:1.5rem; }
+  .hero-headline .accent { color:var(--neon-green); text-shadow:0 0 20px var(--neon-green); }
+  .hero-headline .accent2 { color:var(--neon-cyan); text-shadow:0 0 20px var(--neon-cyan); }
+  .hero-sub { font-family:'Rajdhani',sans-serif; font-size:clamp(0.9rem,2vw,1.15rem); color:rgba(255,255,255,0.45); max-width:600px; margin:0 auto 3rem; letter-spacing:0.05em; line-height:1.7; }
+  .typewriter { font-family:'Share Tech Mono',monospace; font-size:0.9rem; color:var(--neon-green); border-right:2px solid var(--neon-green); white-space:nowrap; overflow:hidden; display:inline-block; animation:typing 3.5s steps(40) infinite, cursor-blink 0.7s step-end infinite; max-width:100%; }
+  @keyframes typing { 0%,15%{width:0} 45%,90%{width:38ch} 100%{width:0} }
+  @keyframes cursor-blink { 50%{border-color:transparent} }
+
+  /* Stats */
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1px; max-width:1100px; margin:0 auto 3rem; border:1px solid rgba(0,255,65,0.1); background:rgba(0,255,65,0.05); }
+  .stat-card { padding:1.5rem; border-right:1px solid rgba(0,255,65,0.08); text-align:center; position:relative; overflow:hidden; transition:background 0.3s; }
+  .stat-card:last-child { border-right:none; }
+  .stat-card:hover { background:rgba(0,255,65,0.06); }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--neon-green),transparent); opacity:0; transition:opacity 0.3s; }
+  .stat-card:hover::before { opacity:1; }
+  .stat-num { font-family:'Orbitron',monospace; font-size:1.8rem; font-weight:700; color:var(--neon-green); text-shadow:0 0 15px var(--neon-green); }
+  .stat-label { font-size:0.62rem; letter-spacing:0.25em; color:rgba(0,255,65,0.45); margin-top:0.25rem; text-transform:uppercase; }
+
+  /* Terminal */
+  .terminal { max-width:700px; margin:0 auto 5rem; background:rgba(0,5,0,0.9); border:1px solid rgba(0,255,65,0.2); border-radius:4px; overflow:hidden; box-shadow:0 0 40px rgba(0,255,65,0.05),inset 0 0 30px rgba(0,0,0,0.5); }
+  .terminal-bar { background:rgba(0,255,65,0.08); border-bottom:1px solid rgba(0,255,65,0.15); padding:0.6rem 1rem; display:flex; align-items:center; gap:0.5rem; }
+  .t-dot { width:10px; height:10px; border-radius:50%; }
+  .t-dot:nth-child(1){background:#ff5f57} .t-dot:nth-child(2){background:#febc2e} .t-dot:nth-child(3){background:#28c840}
+  .t-title { font-size:0.65rem; color:rgba(0,255,65,0.4); letter-spacing:0.2em; margin-left:auto; }
+  .terminal-body { padding:1.5rem; font-size:0.8rem; line-height:1.9; }
+  .t-line { display:flex; gap:0.5rem; }
+  .t-prompt { color:var(--neon-cyan); user-select:none; }
+  .t-cmd { color:rgba(255,255,255,0.85); }
+  .t-out { color:rgba(0,255,65,0.65); padding-left:1rem; }
+
+  /* ===== FEATURES SECTION ===== */
+  .section-wrap { max-width:1100px; margin:0 auto; padding:0 2rem 6rem; }
+
+  .section-header {
+    display:flex; align-items:center; gap:1rem;
+    margin-bottom:0.6rem;
+  }
+  .section-tag {
+    font-size:0.6rem; letter-spacing:0.35em; color:var(--neon-cyan);
+    text-transform:uppercase; opacity:0.6;
+  }
+  .section-line {
+    flex:1; height:1px;
+    background:linear-gradient(90deg,rgba(0,245,255,0.3),transparent);
+  }
+  .section-title {
+    font-family:'Orbitron',monospace; font-size:clamp(1.1rem,3vw,1.8rem);
+    font-weight:700; color:#fff; margin-bottom:0.5rem;
+    letter-spacing:0.08em;
+  }
+  .section-title span { color:var(--neon-green); }
+  .section-desc {
+    font-size:0.75rem; color:rgba(0,255,65,0.4);
+    letter-spacing:0.1em; margin-bottom:1.5rem;
+  }
+
+  /* Empty features placeholder */
+  .features-empty {
+    border:1px dashed rgba(0,255,65,0.12);
+    padding:3rem 2rem;
+    text-align:center;
+    background:rgba(0,255,65,0.015);
+    position:relative;
+    overflow:hidden;
+  }
+  .features-empty::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(0,255,65,0.3),transparent);
+    animation:shimmer 3s infinite;
+  }
+  @keyframes shimmer { 0%{left:-100%} 100%{left:200%} }
+  .features-empty-icon { font-size:2rem; margin-bottom:1rem; opacity:0.3; }
+  .features-empty-text {
+    font-family:'Orbitron',monospace; font-size:0.75rem;
+    color:rgba(0,255,65,0.3); letter-spacing:0.2em; text-transform:uppercase;
+    margin-bottom:0.5rem;
+  }
+  .features-empty-sub {
+    font-size:0.65rem; color:rgba(0,255,65,0.2);
+    letter-spacing:0.1em;
+  }
+
+  /* ===== GEMPA WIDGET (pojok kanan bawah) ===== */
+  #quake-widget {
+    position:fixed; bottom:1.2rem; right:1.2rem;
+    width:290px; z-index:50;
+    font-family:'Share Tech Mono',monospace; font-size:0.7rem;
+    animation:slideInWidget 0.5s ease 0.2s both;
+  }
+  @keyframes slideInWidget {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .qw-header {
+    background:rgba(0,5,0,0.97);
+    border:1px solid rgba(255,102,0,0.35);
+    border-bottom:none;
+    padding:0.5rem 0.8rem;
+    display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer; user-select:none;
+    transition:background 0.2s;
+  }
+  .qw-header:hover { background:rgba(255,102,0,0.04); }
+
+  .qw-title-row { display:flex; align-items:center; gap:0.45rem; }
+  .qw-dot {
+    width:6px; height:6px; border-radius:50%;
+    background:var(--neon-orange);
+    box-shadow:0 0 6px var(--neon-orange);
+    animation:blink 1.8s infinite;
+  }
+  .qw-label { color:var(--neon-orange); letter-spacing:0.18em; font-size:0.62rem; text-transform:uppercase; }
+  .qw-toggle { color:rgba(255,102,0,0.4); font-size:0.58rem; letter-spacing:0.08em; }
+
+  .qw-body {
+    background:rgba(2,6,2,0.98);
+    border:1px solid rgba(255,102,0,0.2);
+    border-top:1px solid rgba(255,102,0,0.08);
+    padding:0.8rem;
+    max-height:260px; overflow-y:auto;
+    transition:max-height 0.3s ease, padding 0.3s;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(255,102,0,0.15) transparent;
+  }
+  .qw-body.collapsed { max-height:0; padding-top:0; padding-bottom:0; overflow:hidden; }
+
+  /* Loading */
+  .qw-loading {
+    text-align:center; color:rgba(0,255,65,0.35);
+    font-size:0.65rem; letter-spacing:0.15em; padding:0.8rem 0;
+  }
+  .qw-loading span { animation:ldots 1.2s infinite; }
+  @keyframes ldots {
+    0%{content:'.'} 33%{content:'..'} 66%{content:'...'} 100%{content:''}
+  }
+
+  /* Error */
+  .qw-err { text-align:center; color:rgba(255,60,60,0.5); font-size:0.62rem; padding:0.5rem 0; }
+
+  /* Content */
+  .qw-live-label {
+    font-size:0.55rem; letter-spacing:0.25em; text-transform:uppercase;
+    color:var(--neon-orange); opacity:0.6; margin-bottom:0.5rem;
+    display:flex; align-items:center; gap:0.3rem;
+  }
+  .qw-live-label::before {
+    content:''; display:inline-block; width:5px; height:5px; border-radius:50%;
+    background:var(--neon-orange); box-shadow:0 0 5px var(--neon-orange);
+    animation:blink 1s infinite;
+  }
+
+  .qw-mag-row { display:flex; align-items:baseline; gap:0.35rem; margin-bottom:0.4rem; }
+  .qw-mag-num {
+    font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:700; line-height:1;
+  }
+  .qw-mag-unit { font-size:0.58rem; color:rgba(255,255,255,0.3); }
+  .mag-low  { color:var(--neon-green);  text-shadow:0 0 8px var(--neon-green); }
+  .mag-mid  { color:var(--neon-orange); text-shadow:0 0 8px var(--neon-orange); }
+  .mag-high { color:#ff3333;            text-shadow:0 0 10px #ff3333; }
+
+  .qw-row {
+    display:flex; justify-content:space-between;
+    color:rgba(0,255,65,0.4); font-size:0.6rem; margin-bottom:0.18rem;
+  }
+  .qw-row span:last-child { color:rgba(0,245,255,0.65); text-align:right; max-width:60%; }
+
+  .qw-wilayah {
+    font-size:0.62rem; color:rgba(255,255,255,0.55); line-height:1.5;
+    border-left:2px solid var(--neon-orange);
+    padding-left:0.5rem; margin:0.5rem 0;
+  }
+  .qw-dirasakan {
+    font-size:0.6rem; color:rgba(0,245,255,0.45); margin-bottom:0.4rem;
+    line-height:1.4;
+  }
+
+  .qw-potensi {
+    font-size:0.58rem; padding:0.2rem 0.45rem; border-radius:2px;
+    letter-spacing:0.05em; display:inline-block;
+  }
+  .pot-safe { background:rgba(0,255,65,0.07); color:var(--neon-green); border:1px solid rgba(0,255,65,0.2); }
+  .pot-warn { background:rgba(255,50,50,0.1); color:#ff4444; border:1px solid rgba(255,50,50,0.3); }
+
+  .qw-divider { border:none; border-top:1px solid rgba(0,255,65,0.07); margin:0.55rem 0; }
+
+  .qw-footer {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:0.5rem; font-size:0.55rem;
+    color:rgba(0,255,65,0.2); letter-spacing:0.1em;
+  }
+  .qw-refresh { color:rgba(0,245,255,0.3); cursor:pointer; }
+  .qw-refresh:hover { color:var(--neon-cyan); }
+  .qw-time { color:rgba(0,255,65,0.2); font-size:0.52rem; }
+
+  /* shakemap thumbnail */
+  .qw-shakemap {
+    width:100%; margin-top:0.6rem; border:1px solid rgba(255,102,0,0.15);
+    opacity:0.75; transition:opacity 0.2s; cursor:pointer;
+    display:block;
+  }
+  .qw-shakemap:hover { opacity:1; }
+
+  /* Footer */
+  footer {
+    border-top:1px solid rgba(0,255,65,0.08);
+    padding:1.5rem 2rem;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:1rem;
+    font-size:0.6rem; color:rgba(0,255,65,0.25); letter-spacing:0.15em;
+  }
+  footer span { color:rgba(0,245,255,0.3); }
+
+  @media(max-width:600px) {
+    .hero { padding:3rem 1rem 2rem; }
+    .section-wrap { padding:0 1rem 4rem; }
+    .features-grid { grid-template-columns:1fr; }
+    .apikey-callout { flex-direction:column; gap:1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+<canvas id="matrix-canvas"></canvas>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+
+<!-- INTRO -->
+<div id="intro-screen">
+  <canvas id="intro-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.15;pointer-events:none;"></canvas>
+  <div style="position:relative;text-align:center;">
+    <div class="intro-title" data-text="BOYSZ PROJECT">BOYSZ PROJECT</div>
+    <div class="intro-sub">// INITIALIZING SYSTEM . . .</div>
+    <div class="intro-bar"><div class="intro-bar-fill"></div></div>
+    <div class="intro-percent" id="introPercent">0%</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-content">
+
+  <header>
+    <div class="logo">BOYSZ<span>.</span>PROJECT</div>
+    <div class="header-status">
+      <span><span class="status-dot"></span> ONLINE</span>
+      <span id="live-clock">--:--:--</span>
+      <span>VER 2.0</span>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="welcome-badge">▶ SELAMAT DATANG DI PROJECT BOYSZ THE SECOND</div>
+    <h1 class="hero-headline">
+      Welcome to<br>
+      <span class="accent">Boysz</span> <span class="accent2">Project</span><br>
+      <span style="font-size:0.55em;color:rgba(255,255,255,0.45);font-weight:400;letter-spacing:0.05em;">// the second chapter</span>
+    </h1>
+    <p class="hero-sub">
+      System initialized. All nodes connected.<br>
+      You've entered the second iteration — deeper, darker, more powerful.
+    </p>
+    <div><span class="typewriter">root@boysz:~$ access granted — welcome back, operator_</span></div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="counter1">00</div><div class="stat-label">API Modules</div></div>
+    <div class="stat-card"><div class="stat-num" id="counter2">00</div><div class="stat-label">Systems Online</div></div>
+    <div class="stat-card"><div class="stat-num" id="counter3">00</div><div class="stat-label">Uptime (hrs)</div></div>
+    <div class="stat-card"><div class="stat-num" id="counter4">00</div><div class="stat-label">Secure Nodes</div></div>
+  </div>
+
+  <!-- Terminal -->
+  <div class="terminal" style="padding:0 2rem;max-width:700px;margin:0 auto 5rem;">
+    <div class="terminal-bar">
+      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      <span class="t-title">BOYSZ_SHELL v2.0</span>
+    </div>
+    <div class="terminal-body">
+      <div class="t-line"><span class="t-prompt">root@boysz:~$</span><span class="t-cmd">./init_project.sh --v2</span></div>
+      <div class="t-out">[OK] Project Boysz v2 initialized successfully</div>
+      <div class="t-line" style="margin-top:0.4rem;"><span class="t-prompt">root@boysz:~$</span><span class="t-cmd">list --modules</span></div>
+      <div class="t-out">[✓] Core modules loaded — 8 features detected</div>
+      <div class="t-out">[✓] Security layer active</div>
+      <div class="t-out">[✓] API gateway: ONLINE</div>
+      <div class="t-out">[✓] Matrix renderer: running</div>
+      <div class="t-line" style="margin-top:0.4rem;"><span class="t-prompt">root@boysz:~$</span><span class="t-cmd" id="blinkCmd">_</span></div>
+    </div>
+  </div>
+
+  <!-- ===== FEATURES ===== -->
+  <div class="section-wrap">
+    <div class="section-header">
+      <span class="section-tag">// MODULE LIST</span>
+      <div class="section-line"></div>
+    </div>
+    <h2 class="section-title">Boysz <span>API Features</span></h2>
+    <p class="section-desc">► Fitur akan ditambahkan oleh operator — stay tuned untuk update modul selanjutnya</p>
+
+    <div class="features-empty">
+      <div class="features-empty-icon">⬡</div>
+      <div class="features-empty-text">No modules loaded yet</div>
+      <div class="features-empty-sub">// Operator akan menambahkan fitur API di sini</div>
+    </div>
+
+  </div><!-- /section-wrap -->
+
+  <!-- GEMPA WIDGET -->
+  <div id="quake-widget">
+    <div class="qw-header" onclick="toggleQuake()">
+      <div class="qw-title-row">
+        <span class="qw-dot"></span>
+        <span class="qw-label">⚡ Info Gempa BMKG</span>
+      </div>
+      <span class="qw-toggle" id="qwToggle">▼</span>
+    </div>
+    <div class="qw-body" id="qwBody">
+      <div class="qw-loading" id="qwLoading">FETCHING DATA<span></span></div>
+      <div id="qwContent" style="display:none;"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>© 2026 BOYSZ PROJECT — ALL SYSTEMS OPERATIONAL</span>
+    <span>BUILD v2.0.0 &nbsp;|&nbsp; NODE: ACTIVE</span>
+  </footer>
+
+</div><!-- /main-content -->
+
+<script>
+// Cursor
+const cursor = document.getElementById('cursor');
+const cursorDot = document.getElementById('cursorDot');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX+'px'; cursor.style.top = e.clientY+'px';
+  cursorDot.style.left = e.clientX+'px'; cursorDot.style.top = e.clientY+'px';
+});
+
+// Matrix
+function initMatrix(id) {
+  const canvas = document.getElementById(id); if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const resize = () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; };
+  resize(); window.addEventListener('resize', resize);
+  const chars = 'アカサタナハマヤラワ01234567890ABCDEF!@#$%^&*<>/\\|';
+  const cols = Math.floor(canvas.width/18);
+  const drops = Array(cols).fill(0);
+  setInterval(() => {
+    ctx.fillStyle='rgba(0,10,0,0.04)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.font='14px Share Tech Mono,monospace';
+    drops.forEach((y,i) => {
+      const ch = chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillStyle = Math.random()>0.95?'#00f5ff':'#00ff41';
+      ctx.fillText(ch,i*18,y*18);
+      drops[i] = y*18>canvas.height&&Math.random()>0.975 ? 0 : y+1;
+    });
+  },60);
+}
+initMatrix('matrix-canvas'); initMatrix('intro-canvas');
+
+// Intro
+let pct=0;
+const pctEl=document.getElementById('introPercent');
+const t=setInterval(()=>{
+  pct=Math.min(100,pct+Math.floor(Math.random()*5)+1);
+  pctEl.textContent=pct+'%';
+  if(pct>=100){ clearInterval(t); setTimeout(launchMain,400); }
+},60);
+function launchMain(){
+  document.getElementById('intro-screen').classList.add('intro-fadeout');
+  setTimeout(()=>{
+    document.getElementById('intro-screen').style.display='none';
+    document.getElementById('main-content').classList.add('visible');
+    startCounters();
+    fetchGempa(); // auto execute saat halaman terbuka
+  },800);
+}
+
+// Clock
+function updateClock(){ document.getElementById('live-clock').textContent=new Date().toTimeString().split(' ')[0]; }
+setInterval(updateClock,1000); updateClock();
+
+// Counters
+function animCounter(id,target,dur){
+  const el=document.getElementById(id); let s=null;
+  const step=ts=>{ if(!s)s=ts; const p=Math.min((ts-s)/dur,1); el.textContent=String(Math.floor(p*target)).padStart(2,'0'); if(p<1)requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function startCounters(){
+  animCounter('counter1',8,1800); animCounter('counter2',7,2000);
+  animCounter('counter3',247,2500); animCounter('counter4',32,2200);
+}
+
+// Terminal blink
+setInterval(()=>{ const el=document.getElementById('blinkCmd'); if(el)el.textContent=el.textContent==='_'?'':'_'; },600);
+
+// ===== GEMPA WIDGET =====
+let qwCollapsed = false;
+function toggleQuake(){
+  qwCollapsed = !qwCollapsed;
+  document.getElementById('qwBody').classList.toggle('collapsed', qwCollapsed);
+  document.getElementById('qwToggle').textContent = qwCollapsed ? '▲' : '▼';
+}
+
+function magClass(m){
+  const v = parseFloat(m);
+  if(v >= 6) return 'mag-high';
+  if(v >= 4.5) return 'mag-mid';
+  return 'mag-low';
+}
+
+function fetchGempa(){
+  const loading = document.getElementById('qwLoading');
+  const content = document.getElementById('qwContent');
+  loading.style.display = 'block';
+  content.style.display = 'none';
+
+  fetch('https://api.nexray.eu.cc/information/gempa')
+    .then(r => r.json())
+    .then(json => {
+      loading.style.display = 'none';
+      content.style.display = 'block';
+
+      if(!json.status || !json.result){
+        content.innerHTML = '<div class="qw-err">⚠ Data tidak tersedia</div>';
+        return;
+      }
+
+      const g = json.result;
+      const mc = magClass(g.Magnitude);
+      const isTsunami = g.Potensi && g.Potensi.toLowerCase().includes('tsunami')
+                        && !g.Potensi.toLowerCase().includes('tidak');
+
+      // Format waktu terakhir fetch
+      const now = new Date();
+      const fetchTime = now.toTimeString().split(' ')[0];
+
+      let html = `
+        <div class="qw-live-label">LIVE — BMKG AUTO DETECT</div>
+
+        <div class="qw-mag-row">
+          <span class="qw-mag-num ${mc}">${g.Magnitude}</span>
+          <span class="qw-mag-unit">SR &nbsp;·&nbsp; ${g.Kedalaman}</span>
+        </div>
+
+        <div class="qw-row"><span>TANGGAL</span><span>${g.Tanggal}</span></div>
+        <div class="qw-row"><span>WAKTU</span><span>${g.Jam}</span></div>
+        <div class="qw-row"><span>KOORDINAT</span><span>${g.Lintang} / ${g.Bujur}</span></div>
+
+        <div class="qw-wilayah">${g.Wilayah}</div>`;
+
+      if(g.Dirasakan){
+        html += `<div class="qw-dirasakan">⦿ Dirasakan: ${g.Dirasakan}</div>`;
+      }
+
+      html += `
+        <div class="qw-potensi ${isTsunami ? 'pot-warn':'pot-safe'}">
+          ${isTsunami ? '⚠ ':'✓ '}${g.Potensi}
+        </div>`;
+
+      if(g.Shakemap){
+        html += `<img class="qw-shakemap" src="${g.Shakemap}" alt="Shakemap" loading="lazy"
+                   onclick="window.open('${g.Shakemap}','_blank')" title="Klik untuk perbesar">`;
+      }
+
+      html += `
+        <hr class="qw-divider">
+        <div class="qw-footer">
+          <span class="qw-time">UPDATED ${fetchTime}</span>
+          <span class="qw-refresh" onclick="fetchGempa()">↻ REFRESH</span>
+        </div>`;
+
+      content.innerHTML = html;
+    })
+    .catch(()=>{
+      document.getElementById('qwLoading').style.display = 'none';
+      const content = document.getElementById('qwContent');
+      content.style.display = 'block';
+      content.innerHTML = `
+        <div class="qw-err">⚠ Gagal terhubung ke API</div>
+        <div class="qw-footer" style="margin-top:0.4rem;">
+          <span class="qw-refresh" onclick="fetchGempa()">↻ COBA LAGI</span>
+        </div>`;
+    });
+}
+
+// Auto-refresh setiap 5 menit
+setInterval(fetchGempa, 5 * 60 * 1000);
+</script>
+</body>
+</html>
