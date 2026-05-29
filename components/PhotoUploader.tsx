@@ -26,9 +26,10 @@ export function PhotoUploader({ endpoint }: PhotoUploaderProps) {
         }}
         onClientUploadComplete={(result) => {
           setErrorMessage("");
-          const publicUrl = result?.[0]?.url ?? result?.[0]?.ufsUrl ?? "";
+          const uploadedFile = result?.[0];
+          const publicUrl = uploadedFile?.url ?? uploadedFile?.ufsUrl ?? "";
           if (!publicUrl) {
-            setErrorMessage("Upload berhasil, tetapi URL publik tidak ditemukan.");
+            setErrorMessage("Upload gagal: URL publik tidak ditemukan.");
             return;
           }
           setUploadedUrl(publicUrl);
