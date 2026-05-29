@@ -45,14 +45,30 @@ initMatrix('intro-canvas');
 
 // Background audio
 const bgAudio = document.getElementById('bg-audio');
+let bgAudioRetryRegistered = false;
+
+function removeAudioRetryListeners() {
+  if (!bgAudioRetryRegistered) return;
+  ['click', 'keydown', 'touchstart'].forEach((eventName) => {
+    document.removeEventListener(eventName, handleAudioRetry);
+  });
+  bgAudioRetryRegistered = false;
+}
+
+function handleAudioRetry() {
+  removeAudioRetryListeners();
+  playBackgroundAudio();
+}
 
 function playBackgroundAudio() {
   if (!bgAudio) return;
   bgAudio.volume = 0.5;
   bgAudio.play().catch(() => {
-    document.addEventListener('click', playBackgroundAudio, { once: true });
-    document.addEventListener('keydown', playBackgroundAudio, { once: true });
-    document.addEventListener('touchstart', playBackgroundAudio, { once: true });
+    if (bgAudioRetryRegistered) return;
+    bgAudioRetryRegistered = true;
+    ['click', 'keydown', 'touchstart'].forEach((eventName) => {
+      document.addEventListener(eventName, handleAudioRetry, { once: true });
+    });
   });
 }
 
