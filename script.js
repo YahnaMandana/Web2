@@ -374,6 +374,7 @@ window.fetchJadwalBola = fetchJadwalBola;
 // ===== PHOTO UPLOAD CARD =====
 let photoCollapsed = true;
 let previewObjectUrl = '';
+const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 function togglePhotoUpload() {
   photoCollapsed = !photoCollapsed;
@@ -406,7 +407,7 @@ function initializePhotoUpload() {
       URL.revokeObjectURL(previewObjectUrl);
       previewObjectUrl = '';
     }
-    previewImg.removeAttribute('src');
+    previewImg.src = '';
     photoMeta.textContent = '';
     previewWrap.style.display = 'none';
   };
@@ -424,8 +425,8 @@ function initializePhotoUpload() {
       return;
     }
 
-    if (!selectedFile.type.startsWith('image/')) {
-      setStatus('File harus berupa gambar.', true);
+    if (!allowedImageTypes.includes(selectedFile.type)) {
+      setStatus('Format harus JPG, PNG, WEBP, atau GIF.', true);
       resetPreview();
       return;
     }
@@ -442,7 +443,7 @@ function initializePhotoUpload() {
     previewImg.src = previewObjectUrl;
     previewWrap.style.display = 'block';
     photoMeta.textContent = `${selectedFile.name} · ${formatFileSize(selectedFile.size)}`;
-    setStatus('Upload berhasil (preview lokal).');
+    setStatus('Preview berhasil ditampilkan.');
   });
 
   fileInput.addEventListener('change', () => {
