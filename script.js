@@ -62,6 +62,7 @@ function launchMain() {
     document.getElementById('main-content').classList.add('visible');
     startCounters();
     fetchGempa();
+    fetchJadwalBola();
     startQuakeAutoRefresh();
   }, 800);
 }
@@ -235,3 +236,77 @@ function startQuakeAutoRefresh() {
   if (quakeRefreshIntervalId) return;
   quakeRefreshIntervalId = setInterval(fetchGempa, 5 * 60 * 1000);
 }
+
+// ===== JADWAL BOLA WIDGET =====
+let jbCollapsed = false;
+
+function toggleJadwalBola() {
+  jbCollapsed = !jbCollapsed;
+  document.getElementById('jbBody').classList.toggle('collapsed', jbCollapsed);
+  document.getElementById('jbToggle').textContent = jbCollapsed ? '▲' : '▼';
+}
+
+window.toggleJadwalBola = toggleJadwalBola;
+
+async function fetchJadwalBola() {
+  const loading = document.getElementById('jbLoading');
+  const content = document.getElementById('jbContent');
+  loading.style.display = 'block';
+  content.style.display = 'none';
+
+  try {
+    const response = await fetch('https://api.nexray.eu.cc/information/jadwalbola');
+    if (!response.ok) throw new Error('Bad response');
+    const data = await response.json();
+
+    loading.style.display = 'none';
+    content.style.display = 'block';
+
+    if (!data?.status || !Array.isArray(data.result) || data.result.length === 0) {
+      content.innerHTML = '<div class="fc-err">⚠ Data tidak tersedia</div>';
+      return;
+    }
+
+    const fetchTime = new Date().toTimeString().split(' ')[0];
+    let html = '';
+
+    data.result.forEach((item) => {
+      // Format: "29 Mei 2026 - 01.45 - Ireland vs Qatar - Friendl"
+      const parts = item.split(' - ');
+      const date = parts[0] || '';
+      const time = parts[1] || '';
+      const teams = parts[2] || '';
+      const comp = parts[3] || '';
+
+      html += `
+        <div class="fc-match">
+          <div class="fc-match-dot"></div>
+          <div class="fc-match-info">
+            <div class="fc-match-time">${date} &nbsp;·&nbsp; ${time} WIB</div>
+            <div class="fc-match-teams">${teams}</div>
+            ${comp ? `<div class="fc-match-comp">${comp}</div>` : ''}
+          </div>
+        </div>`;
+    });
+
+    html += `
+      <hr class="fc-divider">
+      <div class="fc-footer">
+        <span class="fc-time">UPDATED ${fetchTime}</span>
+        <span class="fc-refresh" onclick="fetchJadwalBola()">↻ REFRESH</span>
+      </div>`;
+
+    content.innerHTML = html;
+  } catch (error) {
+    console.warn('Gagal memuat data jadwal bola.', error);
+    loading.style.display = 'none';
+    content.style.display = 'block';
+    content.innerHTML = `
+      <div class="fc-err">⚠ Gagal terhubung ke API</div>
+      <div class="fc-footer" style="margin-top:0.4rem;">
+        <span class="fc-refresh" onclick="fetchJadwalBola()">↻ COBA LAGI</span>
+      </div>`;
+  }
+}
+
+window.fetchJadwalBola = fetchJadwalBola;
