@@ -45,6 +45,7 @@ initMatrix('intro-canvas');
 
 // Background audio
 const bgAudio = document.getElementById('bg-audio');
+const BACKGROUND_AUDIO_VOLUME = 0.5;
 let bgAudioRetryRegistered = false;
 
 function removeAudioRetryListeners() {
@@ -62,12 +63,13 @@ function handleAudioRetry() {
 
 function playBackgroundAudio() {
   if (!bgAudio) return;
-  bgAudio.volume = 0.5;
-  bgAudio.play().catch(() => {
+  bgAudio.volume = BACKGROUND_AUDIO_VOLUME;
+  bgAudio.play().catch((error) => {
+    console.warn('Autoplay audio ditunda sampai ada interaksi pengguna.', error);
     if (bgAudioRetryRegistered) return;
     bgAudioRetryRegistered = true;
     ['click', 'keydown', 'touchstart'].forEach((eventName) => {
-      document.addEventListener(eventName, handleAudioRetry, { once: true });
+      document.addEventListener(eventName, handleAudioRetry);
     });
   });
 }
