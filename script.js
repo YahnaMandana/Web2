@@ -272,14 +272,21 @@ function startQuakeAutoRefresh() {
 // ===== JADWAL BOLA WIDGET =====
 let jbCollapsed = true;
 let jbLoaded = false;
+let jbLoading = false;
 
 function toggleJadwalBola() {
   jbCollapsed = !jbCollapsed;
   document.getElementById('jbBody').classList.toggle('collapsed', jbCollapsed);
   document.getElementById('jbToggle').textContent = jbCollapsed ? '▲' : '▼';
-  if (!jbCollapsed && !jbLoaded) {
-    jbLoaded = true;
-    fetchJadwalBola();
+  if (!jbCollapsed && !jbLoaded && !jbLoading) {
+    jbLoading = true;
+    fetchJadwalBola()
+      .then((loaded) => {
+        jbLoaded = loaded;
+      })
+      .finally(() => {
+        jbLoading = false;
+      });
   }
 }
 
@@ -301,7 +308,7 @@ async function fetchJadwalBola() {
 
     if (!data?.status || !Array.isArray(data.result) || data.result.length === 0) {
       content.innerHTML = '<div class="fc-err">⚠ Data tidak tersedia</div>';
-      return;
+      return true;
     }
 
     const fetchTime = new Date().toTimeString().split(' ')[0];
@@ -334,6 +341,7 @@ async function fetchJadwalBola() {
       </div>`;
 
     content.innerHTML = html;
+    return true;
   } catch (error) {
     console.warn('Gagal memuat data jadwal bola.', error);
     loading.style.display = 'none';
@@ -343,6 +351,7 @@ async function fetchJadwalBola() {
       <div class="fc-footer" style="margin-top:0.4rem;">
         <span class="fc-refresh" onclick="fetchJadwalBola()">↻ COBA LAGI</span>
       </div>`;
+    return false;
   }
 }
 
