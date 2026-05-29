@@ -373,9 +373,11 @@ window.fetchJadwalBola = fetchJadwalBola;
 
 // ===== FOTO UPLOAD =====
 const PHOTO_MAX_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const photoInput = document.getElementById('photoInput');
 const photoStatus = document.getElementById('photoUploadStatus');
 const photoPreview = document.getElementById('photoPreview');
+let currentPhotoObjectUrl = null;
 
 function setUploadStatus(message, isError = false) {
   if (!photoStatus) return;
@@ -384,6 +386,10 @@ function setUploadStatus(message, isError = false) {
 }
 
 function resetPhotoPreview() {
+  if (currentPhotoObjectUrl) {
+    URL.revokeObjectURL(currentPhotoObjectUrl);
+    currentPhotoObjectUrl = null;
+  }
   if (!photoPreview) return;
   photoPreview.removeAttribute('src');
   photoPreview.style.display = 'none';
@@ -397,7 +403,7 @@ function handlePhotoUpload(event) {
     return;
   }
 
-  if (!file.type.startsWith('image/')) {
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
     setUploadStatus('File harus berupa gambar.', true);
     event.target.value = '';
     resetPhotoPreview();
@@ -411,24 +417,12 @@ function handlePhotoUpload(event) {
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    const result = reader.result;
-    if (typeof result !== 'string' || !result.startsWith('data:image/')) {
-      setUploadStatus('Format gambar tidak didukung.', true);
-      resetPhotoPreview();
-      return;
-    }
-    if (!photoPreview) return;
-    photoPreview.src = result;
-    photoPreview.style.display = 'block';
-    setUploadStatus(`Foto "${file.name}" siap digunakan.`);
-  };
-  reader.onerror = () => {
-    setUploadStatus('Gagal membaca file. Coba file lain.', true);
-    resetPhotoPreview();
-  };
-  reader.readAsDataURL(file);
+  resetPhotoPreview();
+  currentPhotoObjectUrl = URL.createObjectURL(file);
+  if (!photoPreview) return;
+  photoPreview.src = currentPhotoObjectUrl;
+  photoPreview.style.display = 'block';
+  setUploadStatus(`Foto "${file.name}" siap digunakan.`);
 }
 
 if (photoInput) {
