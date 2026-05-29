@@ -14,34 +14,36 @@ export function PhotoUploader({ endpoint }: PhotoUploaderProps) {
 
   return (
     <div className="flex max-w-md flex-col gap-3 rounded-lg border p-4">
-      <p className="text-sm font-medium">Pilih file gambar lalu unggah</p>
-      <div role="group" aria-label="Unggah foto">
-        <UploadButton
-          endpoint={endpoint}
-          content={{
-            allowedContent: "Hanya gambar",
-            button({ ready }) {
-              return ready ? "Unggah Foto" : "Menyiapkan...";
-            },
-          }}
-          onClientUploadComplete={(result) => {
-            setErrorMessage("");
-            const uploadedFile = result?.[0];
-            const primaryUrl = uploadedFile?.url;
-            const fallbackUfsUrl = uploadedFile?.ufsUrl;
-            const publicUrl = primaryUrl ?? fallbackUfsUrl ?? "";
-            if (!publicUrl) {
-              setErrorMessage("Upload gagal: URL publik tidak ditemukan.");
-              return;
-            }
-            setUploadedUrl(publicUrl);
-          }}
-          onUploadError={(error) => {
-            setUploadedUrl("");
-            setErrorMessage(error.message || "Upload gagal.");
-          }}
-        />
-      </div>
+      <label className="text-sm font-medium">
+        Pilih file gambar lalu unggah
+        <div role="group" aria-label="Unggah foto">
+          <UploadButton
+            endpoint={endpoint}
+            content={{
+              allowedContent: "Hanya gambar",
+              button({ ready }) {
+                return ready ? "Unggah Foto" : "Menyiapkan...";
+              },
+            }}
+            onClientUploadComplete={(result) => {
+              setErrorMessage("");
+              const uploadedFile = result?.[0];
+              const primaryUrl = uploadedFile?.url;
+              const fallbackUfsUrl = uploadedFile?.ufsUrl;
+              const publicUrl = primaryUrl ?? fallbackUfsUrl ?? "";
+              if (!publicUrl) {
+                setErrorMessage("Upload gagal: URL publik tidak ditemukan.");
+                return;
+              }
+              setUploadedUrl(publicUrl);
+            }}
+            onUploadError={(error) => {
+              setUploadedUrl("");
+              setErrorMessage(error.message || "Upload gagal.");
+            }}
+          />
+        </div>
+      </label>
 
       {uploadedUrl && (
         <p className="text-sm">
@@ -57,7 +59,11 @@ export function PhotoUploader({ endpoint }: PhotoUploaderProps) {
         </p>
       )}
 
-      {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}
+      {errorMessage && (
+        <p role="alert" aria-live="polite" className="text-sm text-red-600">
+          {errorMessage}
+        </p>
+      )}
     </div>
   );
 }
