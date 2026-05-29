@@ -120,6 +120,40 @@ h1 {
   color: #d3e4ff;
 }
 
+.quake {
+  margin-top: 1.4rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(145, 205, 255, 0.25);
+}
+
+.quake h2 {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.1rem, 3.2vw, 1.4rem);
+}
+
+.quake-status {
+  margin: 0 0 0.9rem;
+  color: #b8dcff;
+  font-size: 0.95rem;
+}
+
+.quake-data {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 1fr;
+  gap: 0.45rem 1rem;
+}
+
+.quake-data dt {
+  font-weight: 600;
+  color: #cde7ff;
+}
+
+.quake-data dd {
+  margin: 0;
+  color: #f3f8ff;
+}
+
 @keyframes glowPulse {
   0%,
   100% { text-shadow: 0 0 18px rgba(157, 233, 255, 0.5); }
