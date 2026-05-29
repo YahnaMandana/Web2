@@ -275,7 +275,7 @@ let jbLoaded = false;
 let jbLoading = false;
 
 async function loadJadwalBolaOnce() {
-  if (jbCollapsed || jbLoaded || jbLoading) return;
+  if (jbLoaded || jbLoading) return;
   jbLoading = true;
   try {
     jbLoaded = await fetchJadwalBola();
@@ -288,7 +288,9 @@ function toggleJadwalBola() {
   jbCollapsed = !jbCollapsed;
   document.getElementById('jbBody').classList.toggle('collapsed', jbCollapsed);
   document.getElementById('jbToggle').textContent = jbCollapsed ? '▲' : '▼';
-  loadJadwalBolaOnce();
+  if (!jbCollapsed) {
+    loadJadwalBolaOnce();
+  }
 }
 
 window.toggleJadwalBola = toggleJadwalBola;
