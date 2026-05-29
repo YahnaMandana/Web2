@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { UploadButton } from "@uploadthing/react";
+import type { ComponentProps } from "react";
 
 type PhotoUploaderProps = {
-  endpoint: string;
+  endpoint: ComponentProps<typeof UploadButton>["endpoint"];
 };
 
 export function PhotoUploader({ endpoint }: PhotoUploaderProps) {
@@ -15,7 +16,7 @@ export function PhotoUploader({ endpoint }: PhotoUploaderProps) {
     <div className="flex max-w-md flex-col gap-3 rounded-lg border p-4">
       <p className="text-sm font-medium">Pilih file gambar lalu unggah</p>
       <UploadButton
-        endpoint={endpoint as never}
+        endpoint={endpoint}
         content={{
           allowedContent: "Hanya gambar",
           button({ ready }) {
@@ -43,7 +44,7 @@ export function PhotoUploader({ endpoint }: PhotoUploaderProps) {
           <a
             href={uploadedUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="text-blue-600 underline"
           >
             {uploadedUrl}
