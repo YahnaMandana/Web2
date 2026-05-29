@@ -373,16 +373,28 @@ window.fetchJadwalBola = fetchJadwalBola;
 
 // ===== PHOTO UPLOAD CARD =====
 let photoCollapsed = true;
-let previewObjectUrl = '';
 const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const maxPhotoSizeInBytes = 4 * 1024 * 1024;
+const maxPreviewWidth = 520;
+
+function handleFeatureHeaderKeydown(event, toggleHandler) {
+  if (!event || typeof toggleHandler !== 'function') return;
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  event.preventDefault();
+  toggleHandler();
+}
+
+window.handleFeatureHeaderKeydown = handleFeatureHeaderKeydown;
 
 function togglePhotoUpload() {
   photoCollapsed = !photoCollapsed;
   const body = document.getElementById('photoBody');
   const toggle = document.getElementById('photoToggle');
+  const header = document.getElementById('photoHeader');
   if (!body || !toggle) return;
   body.classList.toggle('collapsed', photoCollapsed);
-  toggle.textContent = photoCollapsed ? '▲' : '▼';
+  toggle.textContent = photoCollapsed ? '▼' : '▲';
+  if (header) header.setAttribute('aria-expanded', String(!photoCollapsed));
 }
 
 window.togglePhotoUpload = togglePhotoUpload;
@@ -398,16 +410,57 @@ function initializePhotoUpload() {
   const uploadButton = document.getElementById('photoUploadBtn');
   const status = document.getElementById('photoUploadStatus');
   const previewWrap = document.getElementById('photoPreviewWrap');
-  const previewImg = document.getElementById('photoPreviewImg');
+  const previewCanvas = document.getElementById('photoPreviewCanvas');
   const photoMeta = document.getElementById('photoMeta');
-  if (!fileInput || !uploadButton || !status || !previewWrap || !previewImg || !photoMeta) return;
+  if (!fileInput || !uploadButton || !status || !previewWrap || !previewCanvas || !photoMeta) return;
+
+  const drawBitmapOnCanvas = (imageSource) => {
+    const canvasContext = previewCanvas.getContext('2d');
+    if (!canvasContext) return false;
+    const sourceWidth = imageSource.width || imageSource.naturalWidth;
+    const sourceHeight = imageSource.height || imageSource.naturalHeight;
+    if (!sourceWidth || !sourceHeight) return false;
+    const ratio = Math.min(1, maxPreviewWidth / sourceWidth);
+    previewCanvas.width = Math.round(sourceWidth * ratio);
+    previewCanvas.height = Math.round(sourceHeight * ratio);
+    canvasContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    canvasContext.drawImage(imageSource, 0, 0, previewCanvas.width, previewCanvas.height);
+    return true;
+  };
+
+  const renderPreview = async (selectedFile) => {
+    if (typeof createImageBitmap === 'function') {
+      const bitmap = await createImageBitmap(selectedFile);
+      const isDrawn = drawBitmapOnCanvas(bitmap);
+      bitmap.close();
+      if (!isDrawn) throw new Error('Canvas drawing failed');
+      return;
+    }
+
+    await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = new Image();
+        image.onload = () => {
+          if (!drawBitmapOnCanvas(image)) {
+            reject(new Error('Canvas drawing failed'));
+            return;
+          }
+          resolve();
+        };
+        image.onerror = () => reject(new Error('Image decode failed'));
+        image.src = String(reader.result || '');
+      };
+      reader.onerror = () => reject(new Error('File reading failed'));
+      reader.readAsDataURL(selectedFile);
+    });
+  };
 
   const resetPreview = () => {
-    if (previewObjectUrl) {
-      URL.revokeObjectURL(previewObjectUrl);
-      previewObjectUrl = '';
-    }
-    previewImg.src = '';
+    const canvasContext = previewCanvas.getContext('2d');
+    if (canvasContext) canvasContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    previewCanvas.width = 0;
+    previewCanvas.height = 0;
     photoMeta.textContent = '';
     previewWrap.style.display = 'none';
   };
@@ -417,7 +470,7 @@ function initializePhotoUpload() {
     status.classList.toggle('error', isError);
   };
 
-  uploadButton.addEventListener('click', () => {
+  uploadButton.addEventListener('click', async () => {
     const selectedFile = fileInput.files?.[0];
     if (!selectedFile) {
       setStatus('Pilih foto terlebih dulu.', true);
@@ -431,19 +484,22 @@ function initializePhotoUpload() {
       return;
     }
 
-    const maxSizeInBytes = 4 * 1024 * 1024;
-    if (selectedFile.size > maxSizeInBytes) {
+    if (selectedFile.size > maxPhotoSizeInBytes) {
       setStatus('Ukuran file maksimal 4MB.', true);
       resetPreview();
       return;
     }
 
-    if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
-    previewObjectUrl = URL.createObjectURL(selectedFile);
-    previewImg.src = previewObjectUrl;
-    previewWrap.style.display = 'block';
-    photoMeta.textContent = `${selectedFile.name} · ${formatFileSize(selectedFile.size)}`;
-    setStatus('Preview berhasil ditampilkan.');
+    try {
+      await renderPreview(selectedFile);
+      previewWrap.style.display = 'block';
+      photoMeta.textContent = `${selectedFile.name} · ${formatFileSize(selectedFile.size)}`;
+      setStatus('Preview berhasil ditampilkan.');
+    } catch (error) {
+      console.warn('Gagal menampilkan preview foto.', error);
+      setStatus('File tidak dapat diproses.', true);
+      resetPreview();
+    }
   });
 
   fileInput.addEventListener('change', () => {

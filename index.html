@@ -498,10 +498,9 @@
     background: rgba(0,0,0,0.35);
     padding: 0.55rem;
   }
-  .upload-preview-wrap img {
+  .upload-preview-wrap canvas {
     width: 100%;
     max-height: 210px;
-    object-fit: contain;
     display: block;
     border: 1px solid rgba(0,245,255,0.15);
   }
@@ -632,14 +631,22 @@
       </div>
 
       <div class="feature-card">
-        <div class="fc-header" onclick="togglePhotoUpload()">
+        <div
+          class="fc-header"
+          id="photoHeader"
+          role="button"
+          tabindex="0"
+          aria-expanded="false"
+          onclick="togglePhotoUpload()"
+          onkeydown="handleFeatureHeaderKeydown(event, togglePhotoUpload)"
+        >
           <div class="fc-title-row">
             <span class="fc-dot"></span>
             <span class="fc-label">🖼 Upload Foto</span>
           </div>
           <div style="display:flex;align-items:center;gap:0.5rem;">
             <span class="fc-badge">LOCAL</span>
-            <span class="fc-toggle" id="photoToggle">▲</span>
+            <span class="fc-toggle" id="photoToggle">▼</span>
           </div>
         </div>
         <div class="fc-body collapsed" id="photoBody">
@@ -650,10 +657,10 @@
               type="file"
               accept="image/*"
             >
-            <button id="photoUploadBtn" class="upload-btn" type="button">Unggah Foto</button>
+            <button id="photoUploadBtn" class="upload-btn" type="button">Tampilkan Preview</button>
             <div id="photoUploadStatus" class="upload-status" aria-live="polite"></div>
             <div id="photoPreviewWrap" class="upload-preview-wrap" style="display:none;">
-              <img id="photoPreviewImg" alt="Preview foto upload">
+              <canvas id="photoPreviewCanvas" aria-label="Preview foto upload"></canvas>
               <div id="photoMeta" class="upload-meta"></div>
             </div>
           </div>
