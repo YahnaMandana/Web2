@@ -375,6 +375,95 @@
   }
   .qw-shakemap:hover { opacity:1; }
 
+  /* ===== FEATURES GRID ===== */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.2rem;
+  }
+
+  /* ===== JADWAL BOLA CARD ===== */
+  .feature-card {
+    background: rgba(0,5,0,0.92);
+    border: 1px solid rgba(0,255,65,0.15);
+    border-top: 2px solid var(--neon-green);
+    padding: 0;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    position: relative;
+  }
+  .feature-card:hover {
+    border-color: rgba(0,255,65,0.35);
+    box-shadow: 0 0 20px rgba(0,255,65,0.06);
+  }
+  .fc-header {
+    background: rgba(0,255,65,0.04);
+    border-bottom: 1px solid rgba(0,255,65,0.1);
+    padding: 0.65rem 0.9rem;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+  }
+  .fc-header:hover { background: rgba(0,255,65,0.07); }
+  .fc-title-row { display: flex; align-items: center; gap: 0.5rem; }
+  .fc-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--neon-green);
+    box-shadow: 0 0 6px var(--neon-green);
+    animation: blink 1.8s infinite;
+  }
+  .fc-label { color: var(--neon-green); letter-spacing: 0.18em; font-size: 0.65rem; text-transform: uppercase; }
+  .fc-toggle { color: rgba(0,255,65,0.35); font-size: 0.58rem; }
+  .fc-badge {
+    font-size: 0.5rem; letter-spacing: 0.15em;
+    background: rgba(0,255,65,0.08); color: rgba(0,255,65,0.5);
+    border: 1px solid rgba(0,255,65,0.15); padding: 0.1rem 0.4rem;
+    text-transform: uppercase;
+  }
+
+  .fc-body {
+    padding: 0.8rem;
+    max-height: 340px; overflow-y: auto;
+    transition: max-height 0.3s ease, padding 0.3s;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,255,65,0.12) transparent;
+  }
+  .fc-body.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; }
+
+  .fc-loading {
+    text-align: center; color: rgba(0,255,65,0.35);
+    font-size: 0.65rem; letter-spacing: 0.15em; padding: 0.8rem 0;
+  }
+  .fc-loading span { animation: ldots 1.2s infinite; }
+
+  .fc-err { text-align: center; color: rgba(255,60,60,0.5); font-size: 0.62rem; padding: 0.5rem 0; }
+
+  .fc-match {
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid rgba(0,255,65,0.06);
+    font-size: 0.62rem; line-height: 1.5;
+  }
+  .fc-match:last-child { border-bottom: none; }
+  .fc-match-dot {
+    width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+    background: var(--neon-green); box-shadow: 0 0 4px var(--neon-green);
+    margin-top: 0.35rem;
+  }
+  .fc-match-info { flex: 1; }
+  .fc-match-time { color: var(--neon-cyan); font-size: 0.58rem; letter-spacing: 0.05em; }
+  .fc-match-teams { color: rgba(255,255,255,0.75); font-size: 0.63rem; }
+  .fc-match-comp { color: rgba(0,255,65,0.35); font-size: 0.55rem; letter-spacing: 0.08em; }
+
+  .fc-divider { border: none; border-top: 1px solid rgba(0,255,65,0.07); margin: 0.55rem 0; }
+  .fc-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 0.4rem; font-size: 0.55rem;
+    color: rgba(0,255,65,0.2); letter-spacing: 0.1em;
+  }
+  .fc-refresh { color: rgba(0,245,255,0.3); cursor: pointer; }
+  .fc-refresh:hover { color: var(--neon-cyan); }
+  .fc-time { color: rgba(0,255,65,0.2); font-size: 0.52rem; }
+
   /* Footer */
   footer {
     border-top:1px solid rgba(0,255,65,0.08);
@@ -474,11 +563,27 @@
     <h2 class="section-title">Boysz <span>API Features</span></h2>
     <p class="section-desc">► Fitur akan ditambahkan oleh operator — stay tuned untuk update modul selanjutnya</p>
 
-    <div class="features-empty">
-      <div class="features-empty-icon">⬡</div>
-      <div class="features-empty-text">No modules loaded yet</div>
-      <div class="features-empty-sub">// Operator akan menambahkan fitur API di sini</div>
-    </div>
+    <div class="features-grid">
+
+      <!-- Jadwal Bola Card -->
+      <div class="feature-card">
+        <div class="fc-header" onclick="toggleJadwalBola()">
+          <div class="fc-title-row">
+            <span class="fc-dot"></span>
+            <span class="fc-label">⚽ Info Jadwal Bola</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="fc-badge">LIVE API</span>
+            <span class="fc-toggle" id="jbToggle">▼</span>
+          </div>
+        </div>
+        <div class="fc-body" id="jbBody">
+          <div class="fc-loading" id="jbLoading">FETCHING DATA<span></span></div>
+          <div id="jbContent" style="display:none;"></div>
+        </div>
+      </div>
+
+    </div><!-- /features-grid -->
 
   </div><!-- /section-wrap -->
 
